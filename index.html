@@ -388,10 +388,12 @@ function updateOverall(){
   document.getElementById("overall").textContent=`${gh}/${gt} variants · ${Math.round(gh/gt*100)}% overall`;
 }
 
-// capture ?edit=<token> once, then scrub it from the URL
-const params=new URLSearchParams(location.search);
-if(params.get("edit")){TOKEN=params.get("edit");localStorage.setItem("pkmn-token",TOKEN);
-  history.replaceState({},"",location.pathname+location.hash);}
+// capture the edit token from the URL *fragment* (#edit=...) — fragments are never
+// sent to the server or leaked in Referer headers — then scrub it from the URL.
+{const h=location.hash.slice(1);
+ if(h.startsWith("edit=")){TOKEN=decodeURIComponent(h.slice(5));
+   localStorage.setItem("pkmn-token",TOKEN);
+   history.replaceState({},"",location.pathname);}}
 
 Promise.all([
   fetch("data.json").then(r=>r.json()),
