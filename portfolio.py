@@ -154,17 +154,17 @@ MANUAL = [
      "img": "https://assets.tcgdex.net/en/me/me02.5/271", "price": 76},
     {"name": "Raichu-GX", "setlabel": "Secret Rare", "grade": "PSA 9",
      "img": "img/secret_raichu-gx.png", "price": 73},
-    # ungraded singles / promos.  Art for the SVP/MEP promos isn't on tcgdex; using
-    # pokemontcg.io promo scans, and the same-illustration Prismatic Double-rare
-    # print for the SVP Espeon/Umbreon promos.
+    # ungraded singles / promos.  SVP/MEP promo scans aren't on tcgdex or
+    # pokemontcg.io — the promo_*.png files are pulled from Limitless TCG's CDN
+    # (tpci/{SET}/{SET}_{num}_R_EN_LG.png) and self-hosted.
     {"name": "Gengar ex", "setlabel": "Temporal Forces", "grade": "SIR",
      "img": "https://assets.tcgdex.net/en/sv/sv05/193", "price": 64},
     {"name": "Deerling", "setlabel": "Temporal Forces", "grade": "IR",
      "img": "https://assets.tcgdex.net/en/sv/sv05/165", "price": 45},
     {"name": "Umbreon ex", "setlabel": "SVP Promo", "grade": "Promo",
-     "img": "img/en_sv_sv08.5_060.webp", "price": 42},
+     "img": "img/promo_umbreon.png", "price": 42},
     {"name": "Espeon ex", "setlabel": "SVP Promo", "grade": "Promo",
-     "img": "img/en_sv_sv08.5_034.webp", "price": 25},
+     "img": "img/promo_espeon.png", "price": 25},
     {"name": "N's Zekrom", "setlabel": "Mega Evolution Promo", "grade": "Promo",
      "img": "img/promo_ns-zekrom.png", "price": 10},
     {"name": "Oricorio ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
