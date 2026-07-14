@@ -396,8 +396,8 @@ function updateOverall(){
    history.replaceState({},"",location.pathname);}}
 
 Promise.all([
-  fetch("data.json").then(r=>r.json()),
-  fetch("api/state").then(r=>r.ok?r.json():{owned:{},packs:{}}).catch(()=>({owned:{},packs:{}}))
+  fetch("data.json",{cache:"no-cache"}).then(r=>r.json()),
+  fetch("api/state",{cache:"no-cache"}).then(r=>r.ok?r.json():{owned:{},packs:{}}).catch(()=>({owned:{},packs:{}}))
 ]).then(([d,state])=>{
   DATA=d; overrides=state.owned||{}; packs=state.packs||{};
   canEdit=!!TOKEN;
