@@ -2,3 +2,4 @@ cache/
 data.json
 *.xlsx
 __pycache__/
+img/

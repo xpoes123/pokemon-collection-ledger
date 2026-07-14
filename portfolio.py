@@ -151,7 +151,7 @@ MANUAL = [
     {"name": "Shadow Rider Calyrex V", "setlabel": "Chilling Reign", "grade": "PSA 10",
      "img": "https://assets.tcgdex.net/en/swsh/swsh6/172", "price": 78},
     {"name": "Mega Dragonite ex", "setlabel": "Ascended Heroes", "grade": "PSA 9",
-     "img": "https://assets.tcgdex.net/en/sv/me02.5/271", "price": 76},
+     "img": "https://assets.tcgdex.net/en/me/me02.5/271", "price": 76},
     {"name": "Raichu-GX", "setlabel": "Secret Rare", "grade": "PSA 9",
      "img": None, "price": 73},
     # ungraded singles / promos

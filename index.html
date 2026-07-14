@@ -175,6 +175,8 @@ const isOwned=(sid,c,v)=>{const k=oid(sid,c.n,v);return k in overrides?overrides
 function toggle(sid,c,v){const k=oid(sid,c.n,v);overrides[k]=!isOwned(sid,c,v);
   localStorage.setItem(KEY,JSON.stringify(overrides));}
 const price=(c,v)=>(c.prices&&c.prices[v])||0;
+// remote tcgdex base -> append /low.webp; localized path (ends .webp) -> use as-is
+const imgsrc=c=>c.img?(c.img.endsWith(".webp")?c.img:c.img+"/low.webp"):null;
 
 function setStats(s){let have=0,tot=0,own=0,need=0;
   for(const c of s.cards)for(const v of c.variants){tot++;const p=price(c,v);
@@ -287,7 +289,7 @@ function renderPortfolio(){
   const grid=sec.querySelector(".grid");
   for(const c of pf){
     const el=document.createElement("div"); el.className="card done";
-    const img=c.img?`<img loading="lazy" src="${c.img}/low.webp" alt="">`
+    const img=c.img?`<img loading="lazy" src="${imgsrc(c)}" alt="">`
       :`<div class="noart"><b>◓</b>no art</div>`;
     el.innerHTML=`<div class="imgwrap">${img}</div>
       <div class="cname" title="${c.name}">${c.name}</div>
@@ -303,7 +305,7 @@ function renderPortfolio(){
 function cardEl(sid,c){
   const el=document.createElement("div");
   el.className="card"+(cardHaveAny(sid,c)?"":" have0")+(cardDone(sid,c)?" done":"");
-  const img=c.img?`<img loading="lazy" src="${c.img}/low.webp" alt="">`:"";
+  const img=c.img?`<img loading="lazy" src="${imgsrc(c)}" alt="">`:"";
   el.innerHTML=`<div class="imgwrap">${img}</div>
     <div class="cname" title="${c.name}">${c.name}</div>
     <div class="cnum">#${c.n}${c.rarity?" · "+c.rarity:""}</div>
