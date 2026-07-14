@@ -152,9 +152,9 @@ MANUAL = [
     {"name": "Oricorio ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
      "img": None, "price": 6},
     {"name": "Mega Charizard X ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
-     "img": None, "price": 20},
+     "img": None, "price": 40},
     {"name": "Mega Charizard Y ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
-     "img": None, "price": 20},
+     "img": None, "price": 40},
 ]
 for m in MANUAL:
     out.append({"query": m["name"], "id": m["setlabel"], "setlabel": m["setlabel"],
