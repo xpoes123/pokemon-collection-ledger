@@ -87,6 +87,11 @@
   .imgwrap{aspect-ratio:63/88;border-radius:8px;overflow:hidden;background:var(--bg);
     box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
   .imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+  .noart{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:6px;color:var(--faint);font-family:'IBM Plex Mono',monospace;
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    background:repeating-linear-gradient(135deg,var(--bg2),var(--bg2) 8px,var(--panel) 8px,var(--panel) 16px)}
+  .noart b{font-size:26px;color:var(--line2)}
   .cname{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cnum{color:var(--faint);font-size:10.5px;font-family:'IBM Plex Mono',monospace;
     text-transform:uppercase;letter-spacing:.03em}
@@ -282,10 +287,11 @@ function renderPortfolio(){
   const grid=sec.querySelector(".grid");
   for(const c of pf){
     const el=document.createElement("div"); el.className="card done";
-    const img=c.img?`<img loading="lazy" src="${c.img}/low.webp" alt="">`:"";
+    const img=c.img?`<img loading="lazy" src="${c.img}/low.webp" alt="">`
+      :`<div class="noart"><b>◓</b>no art</div>`;
     el.innerHTML=`<div class="imgwrap">${img}</div>
       <div class="cname" title="${c.name}">${c.name}</div>
-      <div class="cnum">${setName(c.id)} · ${c.rarity}</div>
+      <div class="cnum">${c.setlabel||setName(c.id)} · ${c.rarity}</div>
       <div class="cprice"><b>${c.price?money(c.price):"—"}</b></div>`;
     grid.appendChild(el);
   }

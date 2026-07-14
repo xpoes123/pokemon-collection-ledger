@@ -139,6 +139,29 @@ for r in rows:
     flag = "  " if r[3] != "!! NO MATCH" and (r[2] == "" or r[4] in RHINT.get(r[2], [])) else "??"
     print(f"{flag}{r[0]:26.26} {r[1]:8} {r[2]:16.16} -> {r[3]:26.26} {r[4]:26.26} {r[5]}")
 
+# Graded / vintage singles outside the 15 tracked sets — hand-entered.
+# Prices are ROUGH ballparks for the given grade; edit freely.
+MANUAL = [
+    {"name": "Eevee", "setlabel": "Prismatic Evolutions ETB", "grade": "PSA 10",
+     "img": "https://assets.tcgdex.net/en/sv/svp/173", "price": 60},
+    {"name": "Mewtwo", "setlabel": "Base Set · 1st Edition", "grade": "PSA 7",
+     "img": "https://assets.tcgdex.net/en/base/base1/10", "price": 400},
+    {"name": "Mew", "setlabel": "XY Evolutions", "grade": "PSA 9",
+     "img": "https://assets.tcgdex.net/en/xy/xy12/53", "price": 40},
+    # Mega Evolution promo-collection box (no art in tcgdex yet)
+    {"name": "Oricorio ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
+     "img": None, "price": 6},
+    {"name": "Mega Charizard X ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
+     "img": None, "price": 20},
+    {"name": "Mega Charizard Y ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
+     "img": None, "price": 20},
+]
+for m in MANUAL:
+    out.append({"query": m["name"], "id": m["setlabel"], "setlabel": m["setlabel"],
+                "n": "", "name": m["name"], "rarity": m["grade"],
+                "img": m["img"], "price": m["price"], "graded": True})
+print(f"+ {len(MANUAL)} graded/manual cards")
+
 # merge into data.json under 'portfolio'
 data = json.load(open(os.path.join(HERE, "data.json")))
 data["portfolio"] = out
