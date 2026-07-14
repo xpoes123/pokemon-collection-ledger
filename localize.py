@@ -38,7 +38,8 @@ def main():
     data = json.load(open(os.path.join(HERE, "data.json")))
     # collect every card dict that has a remote img base
     cards = [c for s in data["sets"] for c in s["cards"]] + data.get("portfolio", [])
-    todo = [c for c in cards if c.get("img") and not c["img"].endswith(".webp")]
+    # only remote tcgdex bases; skip anything already pointing at a local file
+    todo = [c for c in cards if c.get("img") and c["img"].startswith("http")]
     os.makedirs(IMG, exist_ok=True)
 
     print(f"downloading {len(todo)} thumbnails…")

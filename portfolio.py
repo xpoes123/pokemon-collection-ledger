@@ -153,24 +153,26 @@ MANUAL = [
     {"name": "Mega Dragonite ex", "setlabel": "Ascended Heroes", "grade": "PSA 9",
      "img": "https://assets.tcgdex.net/en/me/me02.5/271", "price": 76},
     {"name": "Raichu-GX", "setlabel": "Secret Rare", "grade": "PSA 9",
-     "img": None, "price": 73},
-    # ungraded singles / promos
+     "img": "img/secret_raichu-gx.png", "price": 73},
+    # ungraded singles / promos.  Art for the SVP/MEP promos isn't on tcgdex; using
+    # pokemontcg.io promo scans, and the same-illustration Prismatic Double-rare
+    # print for the SVP Espeon/Umbreon promos.
     {"name": "Gengar ex", "setlabel": "Temporal Forces", "grade": "SIR",
      "img": "https://assets.tcgdex.net/en/sv/sv05/193", "price": 64},
     {"name": "Deerling", "setlabel": "Temporal Forces", "grade": "IR",
      "img": "https://assets.tcgdex.net/en/sv/sv05/165", "price": 45},
     {"name": "Umbreon ex", "setlabel": "SVP Promo", "grade": "Promo",
-     "img": None, "price": 42},
+     "img": "img/en_sv_sv08.5_060.webp", "price": 42},
     {"name": "Espeon ex", "setlabel": "SVP Promo", "grade": "Promo",
-     "img": None, "price": 25},
+     "img": "img/en_sv_sv08.5_034.webp", "price": 25},
     {"name": "N's Zekrom", "setlabel": "Mega Evolution Promo", "grade": "Promo",
-     "img": None, "price": 10},
+     "img": "img/promo_ns-zekrom.png", "price": 10},
     {"name": "Oricorio ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
-     "img": None, "price": 1},
+     "img": "img/promo_oricorio.png", "price": 1},
     {"name": "Mega Charizard X ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
-     "img": None, "price": 40},
+     "img": "img/promo_mega-charizard-x.png", "price": 40},
     {"name": "Mega Charizard Y ex", "setlabel": "Mega Evolution Promo", "grade": "Promo",
-     "img": None, "price": 40},
+     "img": "img/promo_mega-charizard-y.png", "price": 40},
 ]
 for m in MANUAL:
     out.append({"query": m["name"], "id": m["setlabel"], "setlabel": m["setlabel"],

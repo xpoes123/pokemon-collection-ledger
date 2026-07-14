@@ -200,8 +200,8 @@ function doSave(){
      else{canEdit=false;setStatus("⚠ edit token rejected");}})
    .catch(()=>setStatus("⚠ offline — not saved"));}
 const price=(c,v)=>(c.prices&&c.prices[v])||0;
-// remote tcgdex base -> append /low.webp; localized path (ends .webp) -> use as-is
-const imgsrc=c=>c.img?(c.img.endsWith(".webp")?c.img:c.img+"/low.webp"):null;
+// local file (img/…) -> use as-is; remote tcgdex base -> append /low.webp
+const imgsrc=c=>c.img?(c.img.startsWith("img/")?c.img:c.img+"/low.webp"):null;
 
 function setStats(s){let have=0,tot=0,own=0,need=0;
   for(const c of s.cards)for(const v of c.variants){tot++;const p=price(c,v);
