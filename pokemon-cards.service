@@ -1,0 +1,13 @@
+[Unit]
+Description=Pokemon collection tracker state API
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/pokemon
+EnvironmentFile=/opt/pokemon/.env
+ExecStart=/opt/pokemon/venv/bin/python /opt/pokemon/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

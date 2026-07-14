@@ -3,3 +3,4 @@ data.json
 *.xlsx
 __pycache__/
 img/
+.edit_token.txt

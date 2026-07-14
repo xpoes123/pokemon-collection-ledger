@@ -140,6 +140,17 @@
   #homesort{background:var(--panel);color:var(--ink);border:1px solid var(--line2);
     border-radius:8px;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer}
   #homesort:focus{outline:none;border-color:var(--gold)}
+  .editchip{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);
+    border:1px solid var(--line2);border-radius:999px;padding:5px 11px;white-space:nowrap}
+  .editchip:empty{display:none}
+  .packs{font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:var(--dim);
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .packs b{color:var(--teal);font-weight:600}
+  .pk-btn{background:var(--panel);border:1px solid var(--line2);color:var(--ink);
+    width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:14px;line-height:1;
+    font-family:'IBM Plex Mono',monospace}
+  .pk-btn:hover{border-color:var(--teal);color:var(--teal)}
+  .b.ro,.b.ro:hover{cursor:default;border-color:var(--line2);color:var(--dim)}
 
   @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -152,6 +163,7 @@
       <h1>Pokémon <em>Collection</em></h1>
     </div>
     <span class="pct mono" id="overall"></span>
+    <span id="editstatus" class="editchip"></span>
   </div>
   <div class="controls">
     <input type="search" id="q" placeholder="search name or number…" autocomplete="off">
@@ -165,15 +177,28 @@
 
 <script>
 const LABELS={normal:"Norm",reverse:"Rev",ex:"EX",poke:"Poké",ultra:"Ultra",master:"Master",cool:"Cool"};
-const KEY="pkmn-owned";
-let DATA, active, overrides=JSON.parse(localStorage.getItem(KEY)||"{}");
+let DATA, active, overrides={}, packs={};
 let homeSort=localStorage.getItem("pkmn-sort")||"order";
+let TOKEN=localStorage.getItem("pkmn-token")||"";
+let canEdit=false;
 const money=n=>"$"+Math.round(n||0).toLocaleString();
 
 const oid=(sid,n,v)=>`${sid}|${n}|${v}`;
 const isOwned=(sid,c,v)=>{const k=oid(sid,c.n,v);return k in overrides?overrides[k]:!!c.owned[v];};
-function toggle(sid,c,v){const k=oid(sid,c.n,v);overrides[k]=!isOwned(sid,c,v);
-  localStorage.setItem(KEY,JSON.stringify(overrides));}
+function toggle(sid,c,v){const k=oid(sid,c.n,v);overrides[k]=!isOwned(sid,c,v);scheduleSave();}
+function setPacks(sid,n){packs[sid]=Math.max(0,n|0);scheduleSave();}
+
+// debounced save to server — editor only
+let saveTimer=null;
+function setStatus(t){const e=document.getElementById("editstatus");if(e)e.textContent=t;}
+function scheduleSave(){if(!canEdit)return;setStatus("✎ saving…");
+  clearTimeout(saveTimer);saveTimer=setTimeout(doSave,700);}
+function doSave(){
+  fetch("api/state",{method:"PUT",headers:{"Content-Type":"application/json",
+    "Authorization":"Bearer "+TOKEN},body:JSON.stringify({owned:overrides,packs})})
+   .then(r=>{if(r.ok){setStatus("✎ editing · saved ✓");}
+     else{canEdit=false;setStatus("⚠ edit token rejected");}})
+   .catch(()=>setStatus("⚠ offline — not saved"));}
 const price=(c,v)=>(c.prices&&c.prices[v])||0;
 // remote tcgdex base -> append /low.webp; localized path (ends .webp) -> use as-is
 const imgsrc=c=>c.img?(c.img.endsWith(".webp")?c.img:c.img+"/low.webp"):null;
@@ -210,6 +235,7 @@ function renderHome(){
       <div class="stat" style="animation-delay:.05s"><div class="k">Chase portfolio · ${(DATA.portfolio||[]).length} cards</div><div class="v" style="color:var(--gold)">${money(pfVal)}</div></div>
       <div class="stat" style="animation-delay:.1s"><div class="k">Variants owned</div><div class="v">${gh}<small> / ${gt} · ${Math.round(gh/gt*100)}%</small></div></div>
       <div class="stat" style="animation-delay:.15s"><div class="k">Cost to finish all</div><div class="v" style="color:var(--red2)">${money(gneed)}</div></div>
+      <div class="stat" style="animation-delay:.2s"><div class="k">Packs opened</div><div class="v" style="color:var(--teal)">${totalPacks()}<small> approx</small></div></div>
     </div>
     <div class="sortbar">
       <span class="k mono" style="color:var(--dim)">Sets · ${DATA.sets.length}</span>
@@ -242,7 +268,7 @@ function renderHome(){
     a.onclick=()=>setActive(r.s.id);
     a.innerHTML=`<h3>${r.s.name}</h3>
       <div class="bar"><i style="width:${pct}%"></i></div>
-      <div class="meta"><span>${r.st.have}/${r.st.tot} · ${pct}%</span>
+      <div class="meta"><span>${r.st.have}/${r.st.tot} · ${pct}% &nbsp;·&nbsp; 📦${packs[r.s.id]||0}</span>
         <span><b style="color:var(--gold)">${money(r.st.own)}</b> · <span style="color:var(--faint)">finish ${money(r.st.need)}</span></span></div>`;
     wrap.appendChild(a);
   });
@@ -267,8 +293,10 @@ function renderSet(){
   sec.innerHTML=`<div class="sethead"><h2>${s.name}</h2>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <span class="barpct">${st.have}/${st.tot} · ${pct}%</span>
-    <span class="val"><b>${money(st.own)}</b> · <span class="need">finish ${money(st.need)}</span></span></div>
+    <span class="val"><b>${money(st.own)}</b> · <span class="need">finish ${money(st.need)}</span></span>
+    <span class="pk-slot"></span></div>
     <div class="grid"></div>`;
+  sec.querySelector(".pk-slot").replaceWith(packsEl(s.id));
   const grid=sec.querySelector(".grid");
   if(cards.length) for(const c of cards) grid.appendChild(cardEl(s.id,c));
   else grid.innerHTML='<p class="empty">Nothing matches.</p>';
@@ -318,11 +346,12 @@ function cardEl(sid,c){
     b.className="b "+v+(isOwned(sid,c,v)?" on":"");
     b.textContent=LABELS[v]||v;
     b.title=price(c,v)?money(price(c,v)):"no price";
-    b.onclick=()=>{toggle(sid,c,v);
+    if(canEdit) b.onclick=()=>{toggle(sid,c,v);
       b.classList.toggle("on");
       el.className="card"+(cardHaveAny(sid,c)?"":" have0")+(cardDone(sid,c)?" done":"");
       renderPrice(el.querySelector(".cprice"),sid,c);
       updateBars();};
+    else b.classList.add("ro");
     bx.appendChild(b);
   }
   return el;
@@ -333,6 +362,18 @@ function renderPrice(node,sid,c){
   node.innerHTML=(own?`<b>${money(own)}</b> `:"")+(need?`<span class="need">+${money(need)}</span>`:"");
 }
 
+const totalPacks=()=>Object.values(packs).reduce((a,b)=>a+(b||0),0);
+function packsEl(sid){
+  const wrap=document.createElement("span"); wrap.className="packs";
+  const n=packs[sid]||0;
+  if(!canEdit){wrap.innerHTML=`📦 <b>${n}</b> pack${n===1?"":"s"} opened`;return wrap;}
+  wrap.innerHTML=`📦 packs <button class="pk-btn" data-d="-1">−</button>`+
+    `<b class="pk-n">${n}</b><button class="pk-btn" data-d="1">+</button>`;
+  wrap.querySelectorAll(".pk-btn").forEach(btn=>btn.onclick=()=>{
+    setPacks(sid,(packs[sid]||0)+(+btn.dataset.d));
+    wrap.querySelector(".pk-n").textContent=packs[sid];});
+  return wrap;
+}
 function updateBars(){
   const s=DATA.sets.find(x=>x.id===active); if(!s)return;
   const st=setStats(s),sec=document.getElementById("set-"+s.id); if(!sec)return;
@@ -347,8 +388,23 @@ function updateOverall(){
   document.getElementById("overall").textContent=`${gh}/${gt} variants · ${Math.round(gh/gt*100)}% overall`;
 }
 
-fetch("data.json").then(r=>r.json()).then(d=>{
-  DATA=d;
+// capture ?edit=<token> once, then scrub it from the URL
+const params=new URLSearchParams(location.search);
+if(params.get("edit")){TOKEN=params.get("edit");localStorage.setItem("pkmn-token",TOKEN);
+  history.replaceState({},"",location.pathname+location.hash);}
+
+Promise.all([
+  fetch("data.json").then(r=>r.json()),
+  fetch("api/state").then(r=>r.ok?r.json():{owned:{},packs:{}}).catch(()=>({owned:{},packs:{}}))
+]).then(([d,state])=>{
+  DATA=d; overrides=state.owned||{}; packs=state.packs||{};
+  canEdit=!!TOKEN;
+  if(canEdit){ // migrate any pre-server localStorage edits, once
+    const old=JSON.parse(localStorage.getItem("pkmn-owned")||"{}"); let m=false;
+    for(const k in old){if(!(k in overrides)){overrides[k]=old[k];m=true;}}
+    localStorage.removeItem("pkmn-owned"); if(m)doSave();
+    setStatus("✎ editing");
+  }
   const fromHash=location.hash.slice(1);
   const ids=["home","portfolio",...d.sets.map(s=>s.id)];
   active=ids.includes(fromHash)?fromHash:"home";
