@@ -1,0 +1,357 @@
+<title>Pokémon Collection Ledger</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#151210; --bg2:#1c1813; --panel:#211c16; --panel2:#272119;
+    --line:#38301f; --line2:#4a3f2a;
+    --ink:#f3ead6; --dim:#9a8d72; --faint:#6d6350;
+    --red:#e8503a; --red2:#ff6a4d; --gold:#e8b866; --gold2:#f5cd82;
+    --teal:#5fb8a6; --green:#a5c06a; --purple:#c39bd6;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 8px 24px -12px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  html{scrollbar-color:var(--line2) transparent}
+  body{margin:0;color:var(--ink);
+    font:15px/1.45 'Hanken Grotesk',system-ui,sans-serif;
+    background:var(--bg);
+    background-image:
+      radial-gradient(120% 80% at 100% 0%, rgba(232,80,58,.06), transparent 55%),
+      radial-gradient(90% 70% at 0% 0%, rgba(232,184,102,.05), transparent 50%),
+      radial-gradient(rgba(255,255,255,.022) 1px, transparent 1px);
+    background-size:auto,auto,22px 22px;
+    background-attachment:fixed;}
+  /* film grain */
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  a{color:var(--gold);text-decoration:none;cursor:pointer}
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+
+  header{position:sticky;top:0;z-index:20;padding:14px 20px 12px;
+    background:linear-gradient(180deg,rgba(21,18,16,.97),rgba(21,18,16,.88));
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+  .brandrow{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--red2);display:block;margin-bottom:2px}
+  h1{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:clamp(22px,3.4vw,34px);letter-spacing:-.02em;line-height:.95}
+  h1 em{font-style:normal;color:var(--gold)}
+  .pct{margin-left:auto;align-self:center;font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px;white-space:nowrap;background:var(--panel)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input[type=search]{background:var(--bg2);border:1px solid var(--line);
+    color:var(--ink);border-radius:9px;padding:8px 12px;min-width:200px;flex:1;
+    font-family:'IBM Plex Mono',monospace;font-size:13px}
+  input[type=search]:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(232,80,58,.14)}
+  input[type=search]::placeholder{color:var(--faint)}
+  label.toggle{display:flex;gap:7px;align-items:center;color:var(--dim);cursor:pointer;
+    user-select:none;font-size:13px}
+  label.toggle input{accent-color:var(--red)}
+  .jump{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+  .jump a{border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:12.5px;
+    color:var(--dim);letter-spacing:.01em;transition:.14s;background:var(--panel)}
+  .jump a:hover{color:var(--ink);border-color:var(--line2);transform:translateY(-1px)}
+  .jump a.active{color:#fff;background:var(--red);border-color:var(--red);font-weight:600;
+    box-shadow:0 4px 14px -6px var(--red)}
+  .jump a.special{color:var(--gold);border-color:var(--line2)}
+  .jump a.special.active{background:var(--gold);border-color:var(--gold);color:#231a0d}
+
+  section{padding:20px 20px 6px;max-width:1500px;margin:0 auto}
+  .sethead{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;
+    padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .sethead h2{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+    font-size:22px;letter-spacing:-.01em}
+  .bar{flex:1;height:8px;background:var(--bg2);border-radius:99px;overflow:hidden;
+    max-width:340px;min-width:120px;border:1px solid var(--line);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+  .bar>i{display:block;height:100%;border-radius:99px;
+    background:linear-gradient(90deg,var(--gold),var(--red));transition:width .35s cubic-bezier(.2,.8,.2,1)}
+  .barpct{color:var(--dim);font-size:12.5px;white-space:nowrap;font-family:'IBM Plex Mono',monospace}
+  .val{font-size:13px;white-space:nowrap;font-family:'IBM Plex Mono',monospace}
+  .val b{color:var(--gold);font-weight:600} .val .need{color:var(--faint)}
+
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(146px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:9px;display:flex;flex-direction:column;gap:7px;position:relative;transition:.15s;
+    animation:pop .4s both}
+  .card:hover{transform:translateY(-3px);border-color:var(--line2);box-shadow:var(--shadow)}
+  .card.have0{opacity:.72}
+  .card.have0 img{filter:grayscale(.9) brightness(.5) contrast(.95)}
+  .card.done{border-color:var(--gold);
+    background:linear-gradient(180deg,rgba(232,184,102,.09),var(--panel))}
+  .card.done::after{content:"✦";position:absolute;top:8px;right:10px;color:var(--gold);
+    font-size:13px;text-shadow:0 0 8px rgba(232,184,102,.6)}
+  .imgwrap{aspect-ratio:63/88;border-radius:8px;overflow:hidden;background:var(--bg);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+  .imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+  .cname{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cnum{color:var(--faint);font-size:10.5px;font-family:'IBM Plex Mono',monospace;
+    text-transform:uppercase;letter-spacing:.03em}
+  .cprice{font-size:11.5px;font-family:'IBM Plex Mono',monospace}
+  .cprice b{color:var(--gold);font-weight:600}.cprice .need{color:var(--faint)}
+  .badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:1px}
+  .b{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:3px 7px;border-radius:5px;cursor:pointer;border:1px solid var(--line2);
+    background:transparent;color:var(--dim);transition:.1s;font-family:'IBM Plex Mono',monospace}
+  .b:hover{border-color:var(--ink);color:var(--ink)}
+  .b.on{color:#191307;border-color:transparent}
+  .b.normal.on{background:var(--ink)} .b.reverse.on{background:var(--teal)}
+  .b.ex.on{background:var(--red);color:#fff} .b.poke.on{background:var(--green)}
+  .b.master.on{background:var(--purple)} .b.ultra.on{background:var(--gold)}
+  .b.cool.on{background:var(--gold)}
+  .empty{color:var(--dim);padding:0 4px 20px;font-family:'IBM Plex Mono',monospace}
+  footer{color:var(--faint);padding:26px 20px;font-size:12px;max-width:1500px;margin:0 auto;
+    border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;line-height:1.7}
+
+  /* home */
+  .stats{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));margin-bottom:24px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 17px;
+    position:relative;overflow:hidden;animation:pop .5s both}
+  .stat::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--red),var(--gold))}
+  .stat .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.13em;
+    font-family:'IBM Plex Mono',monospace}
+  .stat .v{font-size:30px;font-weight:800;margin-top:8px;font-family:'Bricolage Grotesque',sans-serif;
+    letter-spacing:-.02em;line-height:1}
+  .stat .v small{font-size:13px;color:var(--faint);font-weight:500;font-family:'IBM Plex Mono',monospace}
+  .setcards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(258px,1fr))}
+  .setcard{background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    padding:15px 16px;display:block;transition:.16s;animation:pop .5s both}
+  .setcard:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:var(--shadow)}
+  .setcard h3{margin:0 0 11px;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;
+    font-weight:700;color:var(--ink);letter-spacing:-.01em}
+  .setcard .meta{display:flex;justify-content:space-between;color:var(--dim);font-size:12px;
+    margin-top:11px;font-family:'IBM Plex Mono',monospace}
+  .setcard.star{border-color:var(--line2);
+    background:linear-gradient(180deg,rgba(232,184,102,.08),var(--panel))}
+  .setcard.star h3{color:var(--gold)}
+  .sortbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:14px;flex-wrap:wrap}
+  .sortbar .k{font-size:12px;text-transform:uppercase;letter-spacing:.13em}
+  .sortlbl{color:var(--dim);font-size:12px;display:flex;align-items:center;gap:8px}
+  #homesort{background:var(--panel);color:var(--ink);border:1px solid var(--line2);
+    border-radius:8px;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer}
+  #homesort:focus{outline:none;border-color:var(--gold)}
+
+  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header>
+  <div class="brandrow">
+    <div>
+      <span class="kicker">Master Set Ledger</span>
+      <h1>Pokémon <em>Collection</em></h1>
+    </div>
+    <span class="pct mono" id="overall"></span>
+  </div>
+  <div class="controls">
+    <input type="search" id="q" placeholder="search name or number…" autocomplete="off">
+    <label class="toggle"><input type="checkbox" id="incomplete"> show only incomplete</label>
+  </div>
+  <div class="jump" id="jump"></div>
+</header>
+<main id="main"><p class="empty" style="padding:24px 20px">Loading…</p></main>
+<footer>Click a variant badge to toggle owned — saved in this browser, seeded from your spreadsheet.<br>
+  Prices are rough tcgplayer market values (USD); "to finish" counts every secret &amp; chase card in the set.</footer>
+
+<script>
+const LABELS={normal:"Norm",reverse:"Rev",ex:"EX",poke:"Poké",ultra:"Ultra",master:"Master",cool:"Cool"};
+const KEY="pkmn-owned";
+let DATA, active, overrides=JSON.parse(localStorage.getItem(KEY)||"{}");
+let homeSort=localStorage.getItem("pkmn-sort")||"order";
+const money=n=>"$"+Math.round(n||0).toLocaleString();
+
+const oid=(sid,n,v)=>`${sid}|${n}|${v}`;
+const isOwned=(sid,c,v)=>{const k=oid(sid,c.n,v);return k in overrides?overrides[k]:!!c.owned[v];};
+function toggle(sid,c,v){const k=oid(sid,c.n,v);overrides[k]=!isOwned(sid,c,v);
+  localStorage.setItem(KEY,JSON.stringify(overrides));}
+const price=(c,v)=>(c.prices&&c.prices[v])||0;
+
+function setStats(s){let have=0,tot=0,own=0,need=0;
+  for(const c of s.cards)for(const v of c.variants){tot++;const p=price(c,v);
+    if(isOwned(s.id,c,v)){have++;own+=p;}else{need+=p;}}
+  return{have,tot,own,need};}
+const cardDone=(sid,c)=>c.variants.every(v=>isOwned(sid,c,v));
+const cardHaveAny=(sid,c)=>c.variants.some(v=>isOwned(sid,c,v));
+
+/* ---------- nav / routing ---------- */
+function setActive(id){active=id;location.hash=id;render();}
+
+function render(){
+  document.querySelectorAll("#jump a").forEach(a=>a.classList.toggle("active",a.dataset.id===active));
+  const showSearch=active!=="home";
+  document.querySelector(".controls").style.display=showSearch?"flex":"none";
+  if(active==="home") return renderHome();
+  if(active==="portfolio") return renderPortfolio();
+  return renderSet();
+}
+
+function renderHome(){
+  const main=document.getElementById("main"); main.innerHTML="";
+  let gh=0,gt=0,gown=0,gneed=0;
+  DATA.sets.forEach(s=>{const st=setStats(s);gh+=st.have;gt+=st.tot;gown+=st.own;gneed+=st.need;});
+  const pfVal=(DATA.portfolio||[]).reduce((a,c)=>a+(c.price||0),0);
+  const totWorth=gown+pfVal;
+  const el=document.createElement("section");
+  el.innerHTML=`
+    <div class="stats">
+      <div class="stat" style="animation-delay:0s"><div class="k">Collection worth</div><div class="v" style="color:var(--gold)">${money(totWorth)}</div></div>
+      <div class="stat" style="animation-delay:.05s"><div class="k">Chase portfolio · ${(DATA.portfolio||[]).length} cards</div><div class="v" style="color:var(--gold)">${money(pfVal)}</div></div>
+      <div class="stat" style="animation-delay:.1s"><div class="k">Variants owned</div><div class="v">${gh}<small> / ${gt} · ${Math.round(gh/gt*100)}%</small></div></div>
+      <div class="stat" style="animation-delay:.15s"><div class="k">Cost to finish all</div><div class="v" style="color:var(--red2)">${money(gneed)}</div></div>
+    </div>
+    <div class="sortbar">
+      <span class="k mono" style="color:var(--dim)">Sets · ${DATA.sets.length}</span>
+      <label class="sortlbl mono">sort
+        <select id="homesort">
+          <option value="order">release order</option>
+          <option value="pct">% complete</option>
+          <option value="own">collected $</option>
+          <option value="need">finish $</option>
+        </select>
+      </label>
+    </div>
+    <div class="setcards"></div>`;
+  const wrap=el.querySelector(".setcards");
+  const pc=document.createElement("a");
+  pc.className="setcard star"; pc.onclick=()=>setActive("portfolio");
+  pc.innerHTML=`<h3>✦ Chase Portfolio</h3>
+    <div class="meta"><span>${(DATA.portfolio||[]).length} illustration &amp; special rares</span><span style="color:var(--gold)">${money(pfVal)}</span></div>`;
+  wrap.appendChild(pc);
+
+  const rows=DATA.sets.map((s,i)=>{const st=setStats(s);
+    return{s,i,st,pct:st.tot?st.have/st.tot:0};});
+  const cmp={order:(a,b)=>a.i-b.i, pct:(a,b)=>b.pct-a.pct,
+    own:(a,b)=>b.st.own-a.st.own, need:(a,b)=>b.st.need-a.st.need};
+  rows.sort(cmp[homeSort]||cmp.order);
+  rows.forEach((r,idx)=>{
+    const pct=Math.round(r.pct*100);
+    const a=document.createElement("a");
+    a.className="setcard"; a.style.animationDelay=(idx*.028)+"s";
+    a.onclick=()=>setActive(r.s.id);
+    a.innerHTML=`<h3>${r.s.name}</h3>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="meta"><span>${r.st.have}/${r.st.tot} · ${pct}%</span>
+        <span><b style="color:var(--gold)">${money(r.st.own)}</b> · <span style="color:var(--faint)">finish ${money(r.st.need)}</span></span></div>`;
+    wrap.appendChild(a);
+  });
+  el.querySelector("#homesort").value=homeSort;
+  el.querySelector("#homesort").onchange=e=>{homeSort=e.target.value;
+    localStorage.setItem("pkmn-sort",homeSort);renderHome();};
+  main.appendChild(el);
+  window.scrollTo(0,0); updateOverall();
+}
+
+function renderSet(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const onlyInc=document.getElementById("incomplete").checked;
+  const main=document.getElementById("main"); main.innerHTML="";
+  const s=DATA.sets.find(x=>x.id===active)||DATA.sets[0];
+  const st=setStats(s),pct=st.tot?Math.round(st.have/st.tot*100):0;
+  const cards=s.cards.filter(c=>{
+    if(q && !(c.name.toLowerCase().includes(q)||String(c.n).includes(q))) return false;
+    if(onlyInc && cardDone(s.id,c)) return false;
+    return true;});
+  const sec=document.createElement("section"); sec.id="set-"+s.id;
+  sec.innerHTML=`<div class="sethead"><h2>${s.name}</h2>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <span class="barpct">${st.have}/${st.tot} · ${pct}%</span>
+    <span class="val"><b>${money(st.own)}</b> · <span class="need">finish ${money(st.need)}</span></span></div>
+    <div class="grid"></div>`;
+  const grid=sec.querySelector(".grid");
+  if(cards.length) for(const c of cards) grid.appendChild(cardEl(s.id,c));
+  else grid.innerHTML='<p class="empty">Nothing matches.</p>';
+  main.appendChild(sec);
+  window.scrollTo(0,0); updateOverall();
+}
+
+function renderPortfolio(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const main=document.getElementById("main"); main.innerHTML="";
+  const pf=(DATA.portfolio||[]).filter(c=>!q||c.name.toLowerCase().includes(q));
+  const total=(DATA.portfolio||[]).reduce((a,c)=>a+(c.price||0),0);
+  const setName=id=>{const s=DATA.sets.find(x=>x.id===id);return s?s.name:id;};
+  const sec=document.createElement("section");
+  sec.innerHTML=`<div class="sethead"><h2 style="color:var(--gold)">✦ Chase Portfolio</h2>
+    <span class="val"><b>${money(total)}</b> · ${(DATA.portfolio||[]).length} cards</span></div>
+    <div class="grid"></div>`;
+  const grid=sec.querySelector(".grid");
+  for(const c of pf){
+    const el=document.createElement("div"); el.className="card done";
+    const img=c.img?`<img loading="lazy" src="${c.img}/low.webp" alt="">`:"";
+    el.innerHTML=`<div class="imgwrap">${img}</div>
+      <div class="cname" title="${c.name}">${c.name}</div>
+      <div class="cnum">${setName(c.id)} · ${c.rarity}</div>
+      <div class="cprice"><b>${c.price?money(c.price):"—"}</b></div>`;
+    grid.appendChild(el);
+  }
+  if(!pf.length) grid.innerHTML='<p class="empty">Nothing matches.</p>';
+  main.appendChild(sec);
+  window.scrollTo(0,0); updateOverall();
+}
+
+function cardEl(sid,c){
+  const el=document.createElement("div");
+  el.className="card"+(cardHaveAny(sid,c)?"":" have0")+(cardDone(sid,c)?" done":"");
+  const img=c.img?`<img loading="lazy" src="${c.img}/low.webp" alt="">`:"";
+  el.innerHTML=`<div class="imgwrap">${img}</div>
+    <div class="cname" title="${c.name}">${c.name}</div>
+    <div class="cnum">#${c.n}${c.rarity?" · "+c.rarity:""}</div>
+    <div class="cprice"></div>
+    <div class="badges"></div>`;
+  renderPrice(el.querySelector(".cprice"),sid,c);
+  const bx=el.querySelector(".badges");
+  for(const v of c.variants){
+    const b=document.createElement("button");
+    b.className="b "+v+(isOwned(sid,c,v)?" on":"");
+    b.textContent=LABELS[v]||v;
+    b.title=price(c,v)?money(price(c,v)):"no price";
+    b.onclick=()=>{toggle(sid,c,v);
+      b.classList.toggle("on");
+      el.className="card"+(cardHaveAny(sid,c)?"":" have0")+(cardDone(sid,c)?" done":"");
+      renderPrice(el.querySelector(".cprice"),sid,c);
+      updateBars();};
+    bx.appendChild(b);
+  }
+  return el;
+}
+function renderPrice(node,sid,c){
+  let own=0,need=0;
+  for(const v of c.variants){const p=price(c,v);if(isOwned(sid,c,v))own+=p;else need+=p;}
+  node.innerHTML=(own?`<b>${money(own)}</b> `:"")+(need?`<span class="need">+${money(need)}</span>`:"");
+}
+
+function updateBars(){
+  const s=DATA.sets.find(x=>x.id===active); if(!s)return;
+  const st=setStats(s),sec=document.getElementById("set-"+s.id); if(!sec)return;
+  const pct=st.tot?Math.round(st.have/st.tot*100):0;
+  sec.querySelector(".bar>i").style.width=pct+"%";
+  sec.querySelector(".barpct").textContent=`${st.have}/${st.tot} · ${pct}%`;
+  sec.querySelector(".val").innerHTML=`<b>${money(st.own)}</b> · <span class="need">finish ${money(st.need)}</span>`;
+  updateOverall();
+}
+function updateOverall(){
+  let gh=0,gt=0;DATA.sets.forEach(s=>{const st=setStats(s);gh+=st.have;gt+=st.tot;});
+  document.getElementById("overall").textContent=`${gh}/${gt} variants · ${Math.round(gh/gt*100)}% overall`;
+}
+
+fetch("data.json").then(r=>r.json()).then(d=>{
+  DATA=d;
+  const fromHash=location.hash.slice(1);
+  const ids=["home","portfolio",...d.sets.map(s=>s.id)];
+  active=ids.includes(fromHash)?fromHash:"home";
+  const tabs=[`<a data-id="home" class="special">🏠 Home</a>`,
+    `<a data-id="portfolio" class="special">★ Portfolio</a>`,
+    ...d.sets.map(s=>`<a data-id="${s.id}">${s.name}</a>`)];
+  document.getElementById("jump").innerHTML=tabs.join("");
+  document.querySelectorAll("#jump a").forEach(a=>a.onclick=()=>setActive(a.dataset.id));
+  document.getElementById("q").oninput=render;
+  document.getElementById("incomplete").onchange=render;
+  window.onhashchange=()=>{const h=location.hash.slice(1);
+    if(h&&h!==active&&ids.includes(h)){active=h;render();}};
+  render();
+});
+</script>
