@@ -151,6 +151,24 @@
     font-family:'IBM Plex Mono',monospace}
   .pk-btn:hover{border-color:var(--teal);color:var(--teal)}
   .b.ro,.b.ro:hover{cursor:default;border-color:var(--line2);color:var(--dim)}
+  .sift-btn{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);
+    background:var(--panel);border:1px solid var(--line2);border-radius:999px;
+    padding:5px 12px;cursor:pointer;white-space:nowrap}
+  .sift-btn.on{background:var(--gold);border-color:var(--gold);color:#231a0d}
+  .sift{background:var(--panel);border:1px solid var(--line2);border-radius:14px;
+    padding:16px;margin-bottom:16px;display:flex;flex-direction:column;gap:12px}
+  .sift input{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;
+    width:100%;box-sizing:border-box;text-align:center;padding:12px;border-radius:10px;
+    border:1px solid var(--line2);background:var(--bg);color:var(--ink)}
+  .sift input:focus{outline:none;border-color:var(--gold)}
+  .sift-res{text-align:center;min-height:20px}
+  .sift-verdict{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+    font-size:22px;margin:2px 0 6px}
+  .sift-verdict.need{color:var(--red2)} .sift-verdict.dup{color:var(--green)}
+  .sift-verdict.part{color:var(--gold)} .sift-verdict.none{color:var(--dim);font-size:16px}
+  .sift-name{font-size:15px;color:var(--ink);margin-bottom:8px}
+  .sift-res .badges{justify-content:center}
+  .sift-hint{font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace}
 
   @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -181,6 +199,7 @@ let DATA, active, overrides={}, packs={};
 let homeSort=localStorage.getItem("pkmn-sort")||"order";
 let TOKEN=localStorage.getItem("pkmn-token")||"";
 let canEdit=false;
+let siftMode=false;
 const money=n=>"$"+Math.round(n||0).toLocaleString();
 
 const oid=(sid,n,v)=>`${sid}|${n}|${v}`;
@@ -294,14 +313,57 @@ function renderSet(){
     <div class="bar"><i style="width:${pct}%"></i></div>
     <span class="barpct">${st.have}/${st.tot} · ${pct}%</span>
     <span class="val"><b>${money(st.own)}</b> · <span class="need">finish ${money(st.need)}</span></span>
-    <span class="pk-slot"></span></div>
+    <span class="pk-slot"></span>
+    <button class="sift-btn${siftMode?" on":""}">🔍 Sift</button></div>
+    <div class="sift-slot"></div>
     <div class="grid"></div>`;
   sec.querySelector(".pk-slot").replaceWith(packsEl(s.id));
+  sec.querySelector(".sift-btn").onclick=()=>{siftMode=!siftMode;renderSet();};
+  if(siftMode) sec.querySelector(".sift-slot").replaceWith(siftEl(s));
   const grid=sec.querySelector(".grid");
   if(cards.length) for(const c of cards) grid.appendChild(cardEl(s.id,c));
   else grid.innerHTML='<p class="empty">Nothing matches.</p>';
   main.appendChild(sec);
   window.scrollTo(0,0); updateOverall();
+}
+
+// Sift mode: go through a physical pile, type the card number, get an instant
+// HAVE / NEED verdict for that set — and tap a variant to mark it owned.
+function findByNum(s,raw){raw=(raw||"").trim();if(!raw)return null;
+  const n=Number(raw);
+  return s.cards.find(c=>String(c.n)===raw||(!isNaN(n)&&Number(c.n)===n))||null;}
+
+function siftEl(s){
+  const wrap=document.createElement("div"); wrap.className="sift";
+  wrap.innerHTML=`<input inputmode="numeric" autocomplete="off" placeholder="type card #…" aria-label="card number">
+    <div class="sift-res"></div>
+    <div class="sift-hint">Enter a number → tells you if it's a duplicate.${canEdit?" Tap a variant to mark it owned.":""}</div>`;
+  const input=wrap.querySelector("input"), res=wrap.querySelector(".sift-res");
+
+  function show(){
+    const c=findByNum(s,input.value); res.innerHTML="";
+    if(!input.value.trim()) return;
+    if(!c){res.innerHTML=`<div class="sift-verdict none">No #${input.value.trim()} in ${s.name}</div>`;return;}
+    const owned=c.variants.filter(v=>isOwned(s.id,c,v)).length, tot=c.variants.length;
+    const cls=owned===0?"need":owned===tot?"dup":"part";
+    const txt=owned===0?"✗ NEED IT":owned===tot?"✓ DUPLICATE — you own it":`◐ have ${owned}/${tot} variants`;
+    res.innerHTML=`<div class="sift-verdict ${cls}">${txt}</div>
+      <div class="sift-name">#${c.n} · ${c.name}</div><div class="badges"></div>`;
+    const bx=res.querySelector(".badges");
+    for(const v of c.variants){
+      const b=document.createElement("button");
+      b.className="b "+v+(isOwned(s.id,c,v)?" on":"");
+      b.textContent=(LABELS[v]||v)+(isOwned(s.id,c,v)?" ✓":"");
+      if(canEdit) b.onclick=()=>{toggle(s.id,c,v);show();updateBars();};
+      else b.classList.add("ro");
+      bx.appendChild(b);
+    }
+  }
+  input.oninput=show;
+  input.onkeydown=e=>{if(e.key==="Enter"){show();input.select();}};
+  // focus for rapid entry, but don't yank focus off the search box on a re-render
+  setTimeout(()=>{if(document.activeElement.tagName!=="INPUT")input.focus();},0);
+  return wrap;
 }
 
 function renderPortfolio(){
