@@ -1,4 +1,5 @@
 cache/
+backups/
 data.json
 *.xlsx
 __pycache__/
