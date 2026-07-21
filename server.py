@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Tiny state API for the Pokémon tracker so stats are shared (everyone sees the
-same collection) but only the holder of EDIT_TOKEN can write.
+same collection) but only someone who knows the edit password can write.
 
 GET  /api/state            -> {"owned": {...}, "packs": {...}}   (public)
 PUT  /api/state            -> write state; requires  Authorization: Bearer <EDIT_TOKEN>
+
+EDIT_TOKEN is the shared edit password (e.g. "pokemon") — any computer that types
+it in the browser gets write access. Not adversarial; just keeps viewers read-only.
 
 State is a single JSON file (STATE_FILE). Single user, low traffic — Flask's
 built-in server behind Caddy is plenty. Guardian restarts it if it dies.

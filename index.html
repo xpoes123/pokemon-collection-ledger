@@ -141,7 +141,7 @@
     border-radius:8px;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;cursor:pointer}
   #homesort:focus{outline:none;border-color:var(--gold)}
   .editchip{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);
-    border:1px solid var(--line2);border-radius:999px;padding:5px 11px;white-space:nowrap}
+    border:1px solid var(--line2);border-radius:999px;padding:5px 11px;white-space:nowrap;cursor:pointer}
   .editchip:empty{display:none}
   .packs{font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:var(--dim);
     display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
@@ -197,7 +197,7 @@ function doSave(){
   fetch("api/state",{method:"PUT",headers:{"Content-Type":"application/json",
     "Authorization":"Bearer "+TOKEN},body:JSON.stringify({owned:overrides,packs})})
    .then(r=>{if(r.ok){setStatus("✎ editing · saved ✓");}
-     else{canEdit=false;setStatus("⚠ edit token rejected");}})
+     else{canEdit=false;setStatus("🔒 wrong password — click to retry");}})
    .catch(()=>setStatus("⚠ offline — not saved"));}
 const price=(c,v)=>(c.prices&&c.prices[v])||0;
 // local file (img/…) -> use as-is; remote tcgdex base -> append /low.webp
@@ -388,12 +388,11 @@ function updateOverall(){
   document.getElementById("overall").textContent=`${gh}/${gt} variants · ${Math.round(gh/gt*100)}% overall`;
 }
 
-// capture the edit token from the URL *fragment* (#edit=...) — fragments are never
-// sent to the server or leaked in Referer headers — then scrub it from the URL.
-{const h=location.hash.slice(1);
- if(h.startsWith("edit=")){TOKEN=decodeURIComponent(h.slice(5));
-   localStorage.setItem("pkmn-token",TOKEN);
-   history.replaceState({},"",location.pathname);}}
+// edit access is gated by a shared password (not adversarial — just keeps casual
+// viewers read-only). Click the chip to log in; the password IS the server token.
+function login(){const p=prompt("Edit password:");if(!p)return;
+  TOKEN=p;localStorage.setItem("pkmn-token",TOKEN);canEdit=true;
+  setStatus("✎ editing");doSave();render();}
 
 Promise.all([
   fetch("data.json",{cache:"no-cache"}).then(r=>r.json()),
@@ -401,12 +400,8 @@ Promise.all([
 ]).then(([d,state])=>{
   DATA=d; overrides=state.owned||{}; packs=state.packs||{};
   canEdit=!!TOKEN;
-  if(canEdit){ // migrate any pre-server localStorage edits, once
-    const old=JSON.parse(localStorage.getItem("pkmn-owned")||"{}"); let m=false;
-    for(const k in old){if(!(k in overrides)){overrides[k]=old[k];m=true;}}
-    localStorage.removeItem("pkmn-owned"); if(m)doSave();
-    setStatus("✎ editing");
-  }
+  setStatus(canEdit?"✎ editing":"🔒 Edit");
+  document.getElementById("editstatus").onclick=()=>{if(!canEdit)login();};
   const fromHash=location.hash.slice(1);
   const ids=["home","portfolio",...d.sets.map(s=>s.id)];
   active=ids.includes(fromHash)?fromHash:"home";
